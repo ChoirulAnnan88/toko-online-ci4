@@ -34,3 +34,15 @@ $routes->get('user/success', 'UserController::success');
 $routes->get('/', function() {
     return redirect()->to(session()->has('logged_in') ? '/dashboard' : '/auth/login');
 });
+
+// Admin Routes
+$routes->group('admin', function($routes) {
+    $routes->get('users', 'Admin\UserManagement::users');
+    $routes->get('users/edit/(:num)', 'Admin\UserManagement::edit/$1');
+    $routes->post('users/update/(:num)', 'Admin\UserManagement::update/$1');
+    $routes->get('users/delete/(:num)', 'Admin\UserManagement::delete/$1');
+});
+
+// User Profile Routes
+$routes->get('profile', 'UserController::profile');
+$routes->post('profile/update', 'UserController::updateProfile');

@@ -30,10 +30,25 @@
                     <li class="nav-item">
                         <a class="nav-link" href="<?= site_url('products') ?>">Produk</a>
                     </li>
+                    
+                    <!-- TAMBAH MENU ADMIN JIKA ROLE ADMIN -->
+                    <?php if (session()->has('logged_in') && session()->get('role') == 'admin'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= site_url('admin/users') ?>">
+                            <i class="fas fa-users me-1"></i>Management Users
+                        </a>
+                    </li>
+                    <?php endif; ?>
                 </ul>
                 
                 <ul class="navbar-nav ms-auto">
                     <?php if (session()->has('logged_in')): ?>
+                        <!-- TAMBAH MENU PROFILE -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= site_url('profile') ?>">
+                                <i class="fas fa-user me-1"></i>Profile
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <span class="navbar-text me-3">
                                 <i class="fas fa-user me-1"></i>Halo, <?= session()->get('username') ?>

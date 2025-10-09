@@ -6,138 +6,74 @@ use App\Models\UserModel;
 
 class UserController extends BaseController
 {
-    /**
-     * Menampilkan form create user
-     */
-    public function create()
+    protected $userModel;
+
+    public function __construct()
     {
-        return view('user_create');
+        $this->userModel = new UserModel();
+        
+        // Cek login
+        if (!session()->get('logged_in')) {
+            return redirect()->to('/auth/login')->with('error', 'Silakan login terlebih dahulu');
+        }
     }
 
     /**
-     * Menampilkan form edit user
+     * User profile page
      */
-    public function edit($id)
+    public function profile()
     {
-        $userModel = new UserModel();
-        $user = $userModel->find($id);
+        $userId = session()->get('user_id');
+        $user = $this->userModel->find($userId);
 
         if (!$user) {
-            return redirect()->back()->with('error', 'User tidak ditemukan');
+            return redirect()->to('/auth/logout')->with('error', 'User tidak ditemukan');
         }
 
-        return view('user_edit', ['user' => $user]);
-    }
-
-    /**
-     * PROSES CREATE USER - dengan handling duplicate
-     */
-    public function store()
-    {
-        // Cek method harus POST
-        if (!$this->request->is('post')) {
-            return redirect()->back()->with('error', 'Method tidak diizinkan');
-        }
-
-        $userModel = new UserModel();
-        $validation = \Config\Services::validation();
-
-        // Data dari form
         $data = [
-            'username' => $this->request->getPost('username'),
-            'email'    => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'),
-            'nama_lengkap' => $this->request->getPost('nama_lengkap'),
-            'alamat'   => $this->request->getPost('alamat'),
-            'telepon'  => $this->request->getPost('telepon'),
-            'role'     => $this->request->getPost('role') ?? 'customer'
+            'title' => 'Profile Saya',
+            'user' => $user // PASTIKAN VARIABLE USER ADA
         ];
 
-        // Validasi data
-        if (!$userModel->validate($data)) {
-            return redirect()->back()
-                ->withInput()
-                ->with('errors', $userModel->errors());
-        }
-
-        try {
-            // INSERT data - akan throw exception jika duplicate
-            if ($userModel->insert($data)) {
-                // REDIRECT setelah sukses - PENTING untuk cegah duplicate on refresh
-                return redirect()->to(base_url('user/success'))
-                    ->with('success', 'User berhasil dibuat!')
-                    ->with('user_id', $userModel->getInsertID());
-            } else {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('error', 'Gagal membuat user, silakan coba lagi.');
-            }
-
-        } catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
-            // Handle database exception (termasuk duplicate entry)
-            $errorMessage = $e->getMessage();
-
-            if (strpos($errorMessage, 'Duplicate entry') !== false) {
-                if (strpos($errorMessage, 'username') !== false) {
-                    return redirect()->back()
-                        ->withInput()
-                        ->with('error', 'Username sudah digunakan, silakan pilih username lain.');
-                } elseif (strpos($errorMessage, 'email') !== false) {
-                    return redirect()->back()
-                        ->withInput()
-                        ->with('error', 'Email sudah terdaftar, silakan gunakan email lain.');
-                }
-            }
-
-            // Generic database error
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan database: ' . $errorMessage);
-                
-        } catch (\Exception $e) {
-            // Handle other exceptions
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
+        return view('users/profile', $data);
     }
 
     /**
-     * PROSES UPDATE USER
+     * Update user profile
      */
-    public function update($id)
+    public function updateProfile()
     {
         if (!$this->request->is('post')) {
             return redirect()->back()->with('error', 'Method tidak diizinkan');
         }
 
-        $userModel = new UserModel();
-        $user = $userModel->find($id);
+        $userId = session()->get('user_id');
+        $user = $this->userModel->find($userId);
 
         if (!$user) {
-            return redirect()->back()->with('error', 'User tidak ditemukan');
+            return redirect()->to('/auth/logout')->with('error', 'User tidak ditemukan');
         }
 
         // Data dari form
         $data = [
-            'username' => $this->request->getPost('username'),
-            'email'    => $this->request->getPost('email'),
             'nama_lengkap' => $this->request->getPost('nama_lengkap'),
             'alamat'   => $this->request->getPost('alamat'),
-            'telepon'  => $this->request->getPost('telepon'),
-            'role'     => $this->request->getPost('role') ?? 'customer'
+            'telepon'  => $this->request->getPost('telepon')
         ];
 
-        // Jika password diisi, update password
-        if ($this->request->getPost('password')) {
-            $data['password'] = $this->request->getPost('password');
+        // Jika ingin update username/email, perlu validasi unique
+        if ($this->request->getPost('username') !== $user['username']) {
+            $data['username'] = $this->request->getPost('username');
         }
 
-        // Custom validation rules untuk update (exclude current id)
+        if ($this->request->getPost('email') !== $user['email']) {
+            $data['email'] = $this->request->getPost('email');
+        }
+
+        // Custom validation rules
         $rules = [
-            'username' => "required|min_length[3]|max_length[100]|is_unique[users.username,id,{$id}]",
-            'email'    => "required|valid_email|max_length[255]|is_unique[users.email,id,{$id}]",
-            'password' => 'permit_empty|min_length[3]'
+            'username' => "required|min_length[3]|max_length[100]|is_unique[users.username,id,{$userId}]",
+            'email'    => "required|valid_email|max_length[255]|is_unique[users.email,id,{$userId}]"
         ];
 
         if (!$this->validate($rules)) {
@@ -147,37 +83,24 @@ class UserController extends BaseController
         }
 
         try {
-            if ($userModel->update($id, $data)) {
-                return redirect()->to(base_url('user/success'))
-                    ->with('success', 'User berhasil diupdate!');
+            if ($this->userModel->update($userId, $data)) {
+                // Update session jika username/email berubah
+                if (isset($data['username'])) {
+                    session()->set('username', $data['username']);
+                }
+                if (isset($data['email'])) {
+                    session()->set('email', $data['email']);
+                }
+                if (isset($data['nama_lengkap'])) {
+                    session()->set('nama_lengkap', $data['nama_lengkap']);
+                }
+                
+                return redirect()->to('/profile')->with('success', 'Profile berhasil diupdate!');
             } else {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('error', 'Gagal mengupdate user.');
+                return redirect()->back()->withInput()->with('error', 'Gagal mengupdate profile.');
             }
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * SUCCESS PAGE - untuk redirect setelah operasi sukses
-     */
-    public function success()
-    {
-        return view('user_success');
-    }
-
-    /**
-     * LIST USER (optional)
-     */
-    public function index()
-    {
-        $userModel = new UserModel();
-        $users = $userModel->findAll();
-
-        return view('user_list', ['users' => $users]);
     }
 }
