@@ -15,17 +15,11 @@ class Auth extends BaseController
     public function register()
     {
     if ($this->request->getMethod() === 'post') {
-        // Validation
-        $rules = [
-            'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
-            'email'    => 'required|valid_email|is_unique[users.email]',
-            'password' => 'required|min_length[8]',
-            'nama_lengkap' => 'required'
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
+        // DEBUG: Tampilkan data yang dikirim
+        // echo "<pre>";
+        // print_r($this->request->getPost());
+        // echo "</pre>";
+        // die();
 
         $userData = [
             'username' => $this->request->getPost('username'),
@@ -36,10 +30,32 @@ class Auth extends BaseController
             'telepon' => $this->request->getPost('telepon')
         ];
 
-        if ($this->userModel->save($userData)) {
-            return redirect()->to('/auth/login')->with('success', 'Registrasi berhasil! Silakan login.');
-        } else {
-            return redirect()->back()->withInput()->with('errors', $this->userModel->errors());
+        // Validasi manual
+        if (empty($userData['username'])) {
+            return redirect()->back()->withInput()->with('error', 'Username harus diisi');
+        }
+
+        if (empty($userData['email'])) {
+            return redirect()->back()->withInput()->with('error', 'Email harus diisi');
+        }
+
+        if (empty($userData['password'])) {
+            return redirect()->back()->withInput()->with('error', 'Password harus diisi');
+        }
+
+        if (strlen($userData['password']) < 8) {
+            return redirect()->back()->withInput()->with('error', 'Password minimal 8 karakter');
+        }
+
+        try {
+            if ($this->userModel->save($userData)) {
+                return redirect()->to('/auth/login')->with('success', 'Registrasi berhasil! Silakan login.');
+            } else {
+                $errors = $this->userModel->errors();
+                return redirect()->back()->withInput()->with('errors', $errors);
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Terjadi error: ' . $e->getMessage());
         }
     }
 
