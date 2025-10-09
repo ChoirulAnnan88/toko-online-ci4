@@ -20,9 +20,9 @@ class Filters extends BaseFilters
      * make reading things nicer and simpler.
      */
     public array $aliases = [
-        'csrf'          => CSRF::class, // ← COMMENT/REMOVE INI
+        // 'csrf'          => CSRF::class, // ← COMMENT INI
         'toolbar'       => DebugToolbar::class,
-        // 'honeypot'      => Honeypot::class, // ← COMMENT INI JUGA
+        // 'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
         'cors'          => Cors::class,
@@ -36,10 +36,10 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            // 'forcehttps', // ← COMMENT INI
+            // 'forcehttps',
         ],
         'after' => [
-            'toolbar', // ← Biarkan ini untuk debug
+            'toolbar',
         ],
     ];
 
@@ -49,11 +49,11 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'csrf', // ← PASTIKAN INI DICOMMENT
+            // 'csrf', // ← COMMENT INI JUGA!
             // 'honeypot',
         ],
         'after' => [
-            // 'toolbar', // ← SUDAH DIPINDAH KE $required
+            // 'toolbar',
         ],
     ];
 

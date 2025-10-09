@@ -64,36 +64,26 @@ class Auth extends BaseController
 
     ///debug register
     public function register()
-    {
+{
     if ($this->request->getMethod() === 'post') {
-        // DEBUG: Tampilkan data
-        echo "<h1>🔧 DEBUG REGISTER</h1>";
-        echo "<pre>";
-        echo "POST Data:\n";
+        echo "🔧 DEBUG: Form submitted!<br>";
+        echo "POST Data: ";
         print_r($this->request->getPost());
-        echo "</pre>";
+        echo "<br>";
         
-        $userData = [
-            'username' => $this->request->getPost('username'),
-            'email' => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'),
-            'nama_lengkap' => $this->request->getPost('nama_lengkap'),
-            'alamat' => $this->request->getPost('alamat'),
-            'telepon' => $this->request->getPost('telepon')
-        ];
+        // Test database connection
+        try {
+            $db = \Config\Database::connect();
+            echo "✅ Database connected!<br>";
+        } catch (\Exception $e) {
+            echo "❌ Database error: " . $e->getMessage() . "<br>";
+        }
         
-        echo "<pre>Data to save:\n";
-        print_r($userData);
-        echo "</pre>";
-        
-        // Jangan redirect dulu, biar kita lihat output
-        die();
-        
-        // ... kode asli
+        die(); // Stop untuk lihat debug
     }
     
-    // ... kode asli
-    }
+    // ... kode normal
+}
 
 
 

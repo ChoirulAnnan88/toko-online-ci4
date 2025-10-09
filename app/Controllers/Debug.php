@@ -119,4 +119,35 @@ class Debug extends BaseController
             ';
         }
     }
+    public function testDbInsert()
+    {
+    echo "<h1>🧪 TEST DATABASE INSERT</h1>";
+    
+    try {
+        $db = \Config\Database::connect();
+        
+        // Test insert manual
+        $data = [
+            'username' => 'test_' . time(),
+            'email' => 'test_' . time() . '@test.com',
+            'password' => password_hash('12345678', PASSWORD_DEFAULT),
+            'nama_lengkap' => 'Test User',
+            'alamat' => 'Test Address',
+            'telepon' => '08123456',
+            'role' => 'customer'
+        ];
+        
+        $db->table('users')->insert($data);
+        $insertId = $db->insertID();
+        
+        echo "✅ INSERT BERHASIL! ID: " . $insertId . "<br>";
+        
+        // Verify
+        $user = $db->table('users')->where('id', $insertId)->get()->getRow();
+        echo "✅ USER DITEMUKAN: " . $user->username . "<br>";
+        
+    } catch (\Exception $e) {
+        echo "❌ ERROR: " . $e->getMessage() . "<br>";
+    }
+    }
 }
