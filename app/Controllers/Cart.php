@@ -39,32 +39,43 @@ class Cart extends BaseController
 
     public function add()
     {
-        if (!$this->session->get('logged_in')) {
-            return redirect()->to('/auth/login');
-        }
-
-        $userId = $this->session->get('user_id');
-        $productId = $this->request->getPost('product_id');
-        $quantity = $this->request->getPost('quantity') ?? 1;
-
-        // Cek apakah produk sudah ada di keranjang
-        $existingItem = $this->cartModel->where('user_id', $userId)
-                                       ->where('product_id', $productId)
-                                       ->first();
-
-        if ($existingItem) {
-            $newQuantity = $existingItem['quantity'] + $quantity;
-            $this->cartModel->updateCartItem($userId, $productId, $newQuantity);
-        } else {
-            $this->cartModel->save([
-                'user_id' => $userId,
-                'product_id' => $productId,
-                'quantity' => $quantity
-            ]);
-        }
-
-        return redirect()->to('/cart')->with('success', 'Produk berhasil ditambahkan ke keranjang');
+    if (!$this->session->get('logged_in')) {
+        return redirect()->to('/auth/login');
     }
+
+    $userId = $this->session->get('user_id');
+    $productId = $this->request->getPost('product_id');
+    $quantity = $this->request->getPost('quantity') ?? 1;
+
+    // Validasi product exists
+    $product = $this->productModel->find($productId);
+    if (!$product) {
+        return redirect()->back()->with('error', 'Produk tidak ditemukan');
+    }
+
+    // Cek stok
+    if ($product['stok'] < $quantity) {
+        return redirect()->back()->with('error', 'Stok tidak mencukupi');
+    }
+
+    // Cek apakah produk sudah ada di keranjang
+    $existingItem = $this->cartModel->where('user_id', $userId)
+                                   ->where('product_id', $productId)
+                                   ->first();
+
+    if ($existingItem) {
+        $newQuantity = $existingItem['quantity'] + $quantity;
+        $this->cartModel->updateCartItem($userId, $productId, $newQuantity);
+    } else {
+        $this->cartModel->save([
+            'user_id' => $userId,
+            'product_id' => $productId,
+            'quantity' => $quantity
+        ]);
+    }
+
+    return redirect()->to('/cart')->with('success', 'Produk berhasil ditambahkan ke keranjang');
+    } 
 
     public function update()
     {
