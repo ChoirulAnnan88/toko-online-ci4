@@ -11,6 +11,7 @@ class Auth extends BaseController
 
     public function __construct()
     {
+        echo "🔧 Auth Controller LOADED!<br>";
         $this->userModel = new UserModel();
         $this->session = \Config\Services::session();
         helper(['form', 'url']);
@@ -55,33 +56,45 @@ class Auth extends BaseController
 
     public function register()
     {
-        // JIKA FORM SUBMIT
-        if ($this->request->getMethod() === 'post') {
-            echo "🎯 DEBUG: Form Received!<br>";
-            echo "Data dari form:<br>";
-            echo "Username: " . $this->request->getPost('username') . "<br>";
-            echo "Email: " . $this->request->getPost('email') . "<br>";
-            echo "Password: " . $this->request->getPost('password') . "<br>";
-            echo "Nama Lengkap: " . $this->request->getPost('nama_lengkap') . "<br>";
-            
-            // SIMPLE INSERT - tanpa validasi
-            $data = [
-                'username' => $this->request->getPost('username'),
-                'email' => $this->request->getPost('email'),
-                'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-                'nama_lengkap' => $this->request->getPost('nama_lengkap'),
-                'alamat' => $this->request->getPost('alamat'),
-                'telepon' => $this->request->getPost('telepon'),
-                'role' => 'user'
-            ];
-            
-            $this->userModel->insert($data);
-            echo "🎉 BERHASIL! User created with ID: " . $this->userModel->getInsertID();
-            die();
-        }
+    // JIKA ADA POST DATA
+    if (!empty($_POST) || $this->request->getPost('username')) {
+        echo "🎯 POST DATA DITERIMA!<br>";
+        echo "<pre>";
+        print_r($_POST);
+        echo "</pre>";
+        
+        $data = [
+            'username' => $_POST['username'] ?? 'test_user',
+            'email' => $_POST['email'] ?? 'test@test.com', 
+            'password' => password_hash($_POST['password'] ?? '12345678', PASSWORD_DEFAULT),
+            'nama_lengkap' => $_POST['nama_lengkap'] ?? 'Test User',
+            'role' => 'user'
+        ];
+        
+        $this->userModel->insert($data);
+        echo "🎉 BERHASIL! ID: " . $this->userModel->getInsertID();
+        die();
+    }
 
-        // JIKA GET REQUEST - tampilkan form
-        return view('auth/register', ['title' => 'Register']);
+    // TAMPILKAN FORM TEST SEDERHANA
+    echo '
+    <!DOCTYPE html>
+    <html>
+    <head><title>TEST FORM</title></head>
+    <body>
+        <h1>TEST FORM SEDERHANA</h1>
+        <form method="POST" action="">
+            <input type="text" name="username" value="testuser" required><br>
+            <input type="email" name="email" value="test@test.com" required><br>
+            <input type="password" name="password" value="12345678" required><br>
+            <input type="text" name="nama_lengkap" value="Test User" required><br>
+            <button type="submit">SUBMIT TEST</button>
+        </form>
+        <p>Form ini menggunakan method POST langsung</p>
+    </body>
+    </html>
+    ';
+    die();
     }
 
     public function logout()

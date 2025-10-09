@@ -14,7 +14,6 @@ class Home extends BaseController
     {
         $this->productModel = new ProductModel();
         $this->categoryModel = new CategoryModel();
-
         helper(['text', 'form', 'url']);
     }
 
@@ -23,14 +22,6 @@ class Home extends BaseController
         try {
             // DIRECT QUERY - No models
             $db = \Config\Database::connect();
-            
-            // Debug: Test connection
-            if (!$db->connect()) {
-                throw new \Exception('Database connection failed - Cannot connect to MySQL');
-            }
-            
-            // Debug: Check if tables exist
-            $tables = $db->listTables();
             
             // Products with categories
             $builder = $db->table('products p');
@@ -46,18 +37,20 @@ class Home extends BaseController
             $data = [
                 'title' => 'Toko Online - Beranda',
                 'products' => $products,
-                'categories' => $categories,
-                'debug_info' => [ // Hapus ini di production
-                    'tables_count' => count($tables),
-                    'products_count' => count($products),
-                    'categories_count' => count($categories)
-                ]
+                'categories' => $categories
             ];
+
+            // Tambahkan flash messages dari auth
+            if (session()->has('success')) {
+                $data['success'] = session('success');
+            }
+            if (session()->has('error')) {
+                $data['error'] = session('error');
+            }
 
             return view('home/index', $data);
             
         } catch (\Exception $e) {
-            // Fallback with error info
             $data = [
                 'title' => 'Toko Online - Beranda',
                 'products' => [],

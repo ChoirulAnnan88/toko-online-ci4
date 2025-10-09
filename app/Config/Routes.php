@@ -1,41 +1,36 @@
 <?php
-use CodeIgniter\Router\RouteCollection;
 
-/**
- * @var RouteCollection $routes
- */
+use App\Controllers\UserController;
 
-// 1. DEBUG ROUTES (PALING ATAS)
-$routes->get('debug/auth', 'Debug::auth');
-$routes->get('debug/db-insert', 'Debug::testDbInsert');
-$routes->get('debug/simple-post', 'Debug::testSimplePost');
-$routes->post('debug/test-post', 'Debug::testPost');
+// Home Routes (existing)
+    $routes->get('/', 'Home::index');
+    $routes->get('products', 'Home::products');
+    $routes->get('product/(:any)', 'Home::productDetail/$1');
 
-// 2. TEST ROUTES  
-$routes->get('test_db_connection.php', 'Test::dbConnection');
+// USER ROUTES - Pastikan tepat seperti ini
+    $routes->group('user', function($routes) {
+    $routes->get('create', [UserController::class, 'create']);
+    $routes->post('store', [UserController::class, 'store']);
+    $routes->get('success', [UserController::class, 'success']); // INI YANG PENTING!
+    $routes->get('index', [UserController::class, 'index']);
+    $routes->get('edit/(:num)', [UserController::class, 'edit']);
+    $routes->post('update/(:num)', [UserController::class, 'update']);
+});
 
-// 3. AUTH ROUTES
-$routes->get('auth/login', 'Auth::login');
-$routes->post('auth/login', 'Auth::login');
-$routes->get('auth/register', 'Auth::register');
-$routes->post('auth/register', 'Auth::register');
-$routes->get('auth/logout', 'Auth::logout');
+// Auth Routes
+$routes->get('auth/register', 'AuthController::register');
+$routes->post('auth/processRegister', 'AuthController::processRegister');
+$routes->get('auth/login', 'AuthController::login');
+$routes->post('auth/processLogin', 'AuthController::processLogin');
+$routes->get('auth/logout', 'AuthController::logout');
 
-// 4. CART ROUTES
-$routes->get('cart', 'Cart::index');
-$routes->post('cart/add', 'Cart::add');
-$routes->post('cart/update', 'Cart::update');
-$routes->get('cart/remove/(:num)', 'Cart::remove/$1');
+// User Routes (existing)
+$routes->get('user', 'UserController::index');
+$routes->get('user/create', 'UserController::create');
+$routes->post('user/store', 'UserController::store');
+$routes->get('user/success', 'UserController::success');
 
-// 5. PRODUCT ROUTES
-$routes->get('products', 'Home::products');
-$routes->get('product/(:segment)', 'Home::productDetail/$1');
-
-// 6. HOME ROUTE (PALING BAWAH)
-$routes->get('/', 'Home::index');
-
-$routes->get('testdb/dbTest', 'TestDb::dbTest');
-$routes->get('testdb/checkUsersTable', 'TestDb::checkUsersTable');
-
-// 7. CATCH-ALL (PALING PALING BAWAH - JIKA PERLU)
-// $routes->get('(:any)', 'Home::index'); // ← COMMENT INI!
+// Home page
+$routes->get('/', function() {
+    return redirect()->to(session()->has('logged_in') ? '/dashboard' : '/auth/login');
+});
