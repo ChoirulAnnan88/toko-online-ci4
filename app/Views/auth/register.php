@@ -1,4 +1,4 @@
-<?= $this->include('templates/header') ?>
+<?php echo $this->include('templates/header') ?>
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -11,7 +11,7 @@
                     <!-- Tampilkan error -->
                     <?php if(session()->getFlashdata('error')): ?>
                         <div class="alert alert-danger">
-                            <?= session()->getFlashdata('error') ?>
+                            <?php echo session()->getFlashdata('error') ?>
                         </div>
                     <?php endif; ?>
 
@@ -27,22 +27,22 @@
                         </div>
                     <?php endif; ?>
 
-                    <form method="post" action="<?= base_url('auth/register') ?>">
-                        <?= csrf_field() ?> <!-- ← TAMBAH INI! -->
+                    <form method="post" action="<?php echo base_url('auth/register') ?>">
+                        <?php echo csrf_field() ?>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username</label>
                                     <input type="text" class="form-control" id="username" name="username" required 
-                                           value="<?= old('username') ?>">
+                                           value="<?php echo old('username') ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email</label>
                                     <input type="email" class="form-control" id="email" name="email" required 
-                                           value="<?= old('email') ?>">
+                                           value="<?php echo old('email') ?>">
                                 </div>
                             </div>
                         </div>
@@ -55,18 +55,18 @@
                         <div class="mb-3">
                             <label for="nama_lengkap" class="form-label">Nama Lengkap</label>
                             <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" required 
-                                   value="<?= old('nama_lengkap') ?>">
+                                   value="<?php echo old('nama_lengkap') ?>">
                         </div>
 
                         <div class="mb-3">
                             <label for="alamat" class="form-label">Alamat</label>
-                            <textarea class="form-control" id="alamat" name="alamat" rows="3"><?= old('alamat') ?></textarea>
+                            <textarea class="form-control" id="alamat" name="alamat" rows="3"><?php echo old('alamat') ?></textarea>
                         </div>
 
                         <div class="mb-3">
                             <label for="telepon" class="form-label">Telepon</label>
                             <input type="text" class="form-control" id="telepon" name="telepon" 
-                                   value="<?= old('telepon') ?>">
+                                   value="<?php echo old('telepon') ?>">
                         </div>
                         
                         <button type="submit" class="btn btn-primary w-100">
@@ -75,7 +75,7 @@
                     </form>
                     
                     <div class="text-center mt-3">
-                        <p>Sudah punya akun? <a href="<?= base_url('auth/login') ?>">Login di sini</a></p>
+                        <p>Sudah punya akun? <a href="<?php echo base_url('auth/login') ?>">Login di sini</a></p>
                     </div>
                 </div>
             </div>
@@ -83,4 +83,4 @@
     </div>
 </div>
 
-<?= $this->include('templates/footer') ?>
+<?php echo $this->include('templates/footer') ?>
