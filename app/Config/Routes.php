@@ -6,6 +6,11 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
+// Debug Routes - TAMBAH INI!
+$routes->get('debug/auth', 'Debug::auth');
+$routes->match(['get', 'post'], 'debug/test-register', 'Debug::testRegister');
+
+
 // Home Routes
 $routes->get('/', 'Home::index');
 $routes->get('/products', 'Home::products');

@@ -32,6 +32,24 @@ class App extends BaseConfig
 
     public bool $CSPEnabled = false;
 
+    /**
+     * --------------------------------------------------------------------
+     * CSRF Protection
+     * --------------------------------------------------------------------
+     */
+    public $CSRFProtection = true; // ← DISABLE CSRF
+    public $CSRFTokenName  = 'csrf_test_name';
+    public $CSRFHeaderName = 'X-CSRF-TOKEN';
+    public $CSRFCookieName = 'csrf_cookie_name';
+    public $CSRFExpire     = 7200;
+    public $CSRFRegenerate = true;
+    public $CSRFRedirect   = false; // ← SET FALSE
+
+    /**
+     * --------------------------------------------------------------------
+     * Session Configuration
+     * --------------------------------------------------------------------
+     */
     public int $sessionExpiration = 7200;
 
     public string $sessionSavePath = WRITEPATH . 'session';
@@ -51,9 +69,10 @@ class App extends BaseConfig
     public string $cookieSameSite = 'Lax';
 
     public function __construct()
-{
-    parent::__construct();
+    {
+        parent::__construct();
 
-    $this->environment = 'production';
-}
+        // Untuk development, set ke development
+        $this->environment = 'development'; // ← UBAH KE DEVELOPMENT
+    }
 }

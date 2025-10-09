@@ -61,68 +61,105 @@ class Auth extends BaseController
         return view('auth/login', $data);
     }
 
+
+    ///debug register
     public function register()
     {
-        if ($this->request->getMethod() === 'post') {
-            // Validasi manual sederhana
-            $username = $this->request->getPost('username');
-            $email = $this->request->getPost('email');
-            $password = $this->request->getPost('password');
-            $nama_lengkap = $this->request->getPost('nama_lengkap');
-
-            // Validasi required fields
-            if (empty($username) || empty($email) || empty($password) || empty($nama_lengkap)) {
-                return redirect()->back()->with('error', 'Semua field wajib diisi')->withInput();
-            }
-
-            // Validasi password length
-            if (strlen($password) < 8) {
-                return redirect()->back()->with('error', 'Password minimal 8 karakter')->withInput();
-            }
-
-            // Cek email unique
-            $existingEmail = $this->userModel->where('email', $email)->first();
-            if ($existingEmail) {
-                return redirect()->back()->with('error', 'Email sudah terdaftar')->withInput();
-            }
-
-            // Cek username unique
-            $existingUsername = $this->userModel->where('username', $username)->first();
-            if ($existingUsername) {
-                return redirect()->back()->with('error', 'Username sudah terdaftar')->withInput();
-            }
-
-            $userData = [
-                'username' => $username,
-                'email' => $email,
-                'password' => $password,
-                'nama_lengkap' => $nama_lengkap,
-                'alamat' => $this->request->getPost('alamat'),
-                'telepon' => $this->request->getPost('telepon')
-            ];
-
-            try {
-                if ($this->userModel->save($userData)) {
-                    return redirect()->to('/auth/login')->with('success', 'Registrasi berhasil! Silakan login.');
-                } else {
-                    $errors = $this->userModel->errors();
-                    return redirect()->back()->with('errors', $errors)->withInput();
-                }
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
-            }
-        }
-
-        $data = [
-            'title' => 'Register - Toko Online'
+    if ($this->request->getMethod() === 'post') {
+        // DEBUG: Tampilkan data
+        echo "<h1>🔧 DEBUG REGISTER</h1>";
+        echo "<pre>";
+        echo "POST Data:\n";
+        print_r($this->request->getPost());
+        echo "</pre>";
+        
+        $userData = [
+            'username' => $this->request->getPost('username'),
+            'email' => $this->request->getPost('email'),
+            'password' => $this->request->getPost('password'),
+            'nama_lengkap' => $this->request->getPost('nama_lengkap'),
+            'alamat' => $this->request->getPost('alamat'),
+            'telepon' => $this->request->getPost('telepon')
         ];
-
-        return view('auth/register', $data);
+        
+        echo "<pre>Data to save:\n";
+        print_r($userData);
+        echo "</pre>";
+        
+        // Jangan redirect dulu, biar kita lihat output
+        die();
+        
+        // ... kode asli
+    }
+    
+    // ... kode asli
     }
 
-    public function logout()
-    {
-        $this->session->destroy();
-        return redirect()->to('/')->with('success', 'Logout berhasil!');
-    }
-}
+
+
+
+    // public function register()
+    // {
+    //     if ($this->request->getMethod() === 'post') {
+    //         // Validasi manual sederhana
+    //         $username = $this->request->getPost('username');
+    //         $email = $this->request->getPost('email');
+    //         $password = $this->request->getPost('password');
+    //         $nama_lengkap = $this->request->getPost('nama_lengkap');
+
+    //         // Validasi required fields
+    //         if (empty($username) || empty($email) || empty($password) || empty($nama_lengkap)) {
+    //             return redirect()->back()->with('error', 'Semua field wajib diisi')->withInput();
+    //         }
+
+    //         // Validasi password length
+    //         if (strlen($password) < 8) {
+    //             return redirect()->back()->with('error', 'Password minimal 8 karakter')->withInput();
+    //         }
+
+    //         // Cek email unique
+    //         $existingEmail = $this->userModel->where('email', $email)->first();
+    //         if ($existingEmail) {
+    //             return redirect()->back()->with('error', 'Email sudah terdaftar')->withInput();
+    //         }
+
+    //         // Cek username unique
+    //         $existingUsername = $this->userModel->where('username', $username)->first();
+    //         if ($existingUsername) {
+    //             return redirect()->back()->with('error', 'Username sudah terdaftar')->withInput();
+    //         }
+
+    //         $userData = [
+    //             'username' => $username,
+    //             'email' => $email,
+    //             'password' => $password,
+    //             'nama_lengkap' => $nama_lengkap,
+    //             'alamat' => $this->request->getPost('alamat'),
+    //             'telepon' => $this->request->getPost('telepon')
+    //         ];
+
+    //         try {
+    //             if ($this->userModel->save($userData)) {
+    //                 return redirect()->to('/auth/login')->with('success', 'Registrasi berhasil! Silakan login.');
+    //             } else {
+    //                 $errors = $this->userModel->errors();
+    //                 return redirect()->back()->with('errors', $errors)->withInput();
+    //             }
+    //         } catch (\Exception $e) {
+    //             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+    //         }
+    //     }
+
+//         $data = [
+//             'title' => 'Register - Toko Online'
+//         ];
+
+//         return view('auth/register', $data);
+//     }
+
+//     public function logout()
+//     {
+//         $this->session->destroy();
+//         return redirect()->to('/')->with('success', 'Logout berhasil!');
+//     }
+// }

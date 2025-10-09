@@ -15,10 +15,14 @@ use CodeIgniter\Filters\SecureHeaders;
 
 class Filters extends BaseFilters
 {
+    /**
+     * Configures aliases for Filter classes to
+     * make reading things nicer and simpler.
+     */
     public array $aliases = [
-        'csrf'          => CSRF::class,
+        'csrf'          => CSRF::class, // ← COMMENT/REMOVE INI
         'toolbar'       => DebugToolbar::class,
-        'honeypot'      => Honeypot::class,
+        // 'honeypot'      => Honeypot::class, // ← COMMENT INI JUGA
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
         'cors'          => Cors::class,
@@ -27,24 +31,41 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
     ];
 
+    /**
+     * List of special required filters.
+     */
     public array $required = [
         'before' => [
-            // 'forcehttps',
+            // 'forcehttps', // ← COMMENT INI
         ],
         'after' => [
-            'toolbar',
+            'toolbar', // ← Biarkan ini untuk debug
         ],
     ];
 
+    /**
+     * List of filter aliases that are always
+     * applied before and after every request.
+     */
     public array $globals = [
         'before' => [
-            // 'csrf', // ← COMMENT INI! CSRF DISABLED
+            'csrf', // ← PASTIKAN INI DICOMMENT
+            // 'honeypot',
         ],
         'after' => [
-            // 'honeypot',
+            // 'toolbar', // ← SUDAH DIPINDAH KE $required
         ],
     ];
 
+    /**
+     * List of filter aliases that works on a
+     * particular HTTP method (GET, POST, etc.).
+     */
     public array $methods = [];
+
+    /**
+     * List of filter aliases that should run on any
+     * before or after URI patterns.
+     */
     public array $filters = [];
 }
