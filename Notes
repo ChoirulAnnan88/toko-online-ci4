@@ -1,9 +1,0 @@
-// CURRENT ROUTES STRUCTURE:
-// - /                 → Home::index
-// - /products         → Home::products  
-// - /product/:segment → Home::productDetail
-// - /auth/*           → Auth::*
-// - /cart/*           → Cart::*
-// - /checkout/*       → Checkout::*
-// - /test/*           → TestDb::*
-// - /debug/*          → DebugAuth::*

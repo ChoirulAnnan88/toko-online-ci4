@@ -19,15 +19,8 @@ class UserModel extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
 
-    protected $validationRules = [
-        'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
-        'email'    => 'required|valid_email|is_unique[users.email]',
-        'password' => 'required|min_length[3]',
-        'nama_lengkap' => 'required|min_length[3]'
-    ];
-
-    protected $beforeInsert = ['hashPassword'];
-    protected $beforeUpdate = ['hashPassword'];
+    protected $beforeInsert   = ['hashPassword'];
+    protected $beforeUpdate   = ['hashPassword'];
 
     protected function hashPassword(array $data)
     {
@@ -35,5 +28,10 @@ class UserModel extends Model
             $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
         }
         return $data;
+    }
+
+    public function verifyPassword($password, $hashedPassword)
+    {
+        return password_verify($password, $hashedPassword);
     }
 }

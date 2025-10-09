@@ -1,1 +1,0 @@
-    echo "📊 Total tables: " . $conn- . "^<br^>";
