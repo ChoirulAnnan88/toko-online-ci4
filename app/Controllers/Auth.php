@@ -162,4 +162,4 @@ class Auth extends BaseController
 //         $this->session->destroy();
 //         return redirect()->to('/')->with('success', 'Logout berhasil!');
 //     }
-// }
+}
