@@ -37,42 +37,55 @@ class App extends BaseConfig
      * CSRF Protection
      * --------------------------------------------------------------------
      */
-    public $CSRFProtection = true; // ← DISABLE CSRF
-    public $CSRFTokenName  = 'csrf_test_name';
-    public $CSRFHeaderName = 'X-CSRF-TOKEN';
-    public $CSRFCookieName = 'csrf_cookie_name';
-    public $CSRFExpire     = 7200;
-    public $CSRFRegenerate = true;
-    public $CSRFRedirect   = false; // ← SET FALSE
+    public string $CSRFTokenName = 'csrf_test_name';
+    
+    public string $CSRFHeaderName = 'X-CSRF-TOKEN';
+    
+    public string $CSRFCookieName = 'csrf_cookie_name';
+    
+    public int $CSRFExpire = 0;
+    
+    public bool $CSRFRegenerate = false;
+    
+    public bool $CSRFRedirect = false;
+    
+    public bool $CSRFSecure = false;
+    
+    public string $CSRFSameSite = 'Lax';
 
     /**
      * --------------------------------------------------------------------
      * Session Configuration
      * --------------------------------------------------------------------
      */
-    public int $sessionExpiration = 7200;
-
-    public string $sessionSavePath = WRITEPATH . 'session';
-
     public string $sessionDriver = 'CodeIgniter\Session\Handlers\FileHandler';
-
+    
     public string $sessionCookieName = 'ci_session';
-
+    
+    public int $sessionExpiration = 7200;
+    
+    public string $sessionSavePath = WRITEPATH . 'session';
+    
+    public bool $sessionMatchIP = false;
+    
     public int $sessionTimeToUpdate = 300;
-
+    
     public bool $sessionRegenerateDestroy = false;
 
+    /**
+     * --------------------------------------------------------------------
+     * Cookie Configuration
+     * --------------------------------------------------------------------
+     */
+    public string $cookiePrefix = '';
+    
+    public string $cookieDomain = '';
+    
+    public string $cookiePath = '/';
+    
     public bool $cookieSecure = false;
-
+    
     public bool $cookieHTTPOnly = true;
-
+    
     public string $cookieSameSite = 'Lax';
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        // Untuk development, set ke development
-        $this->environment = 'development'; // ← UBAH KE DEVELOPMENT
-    }
 }

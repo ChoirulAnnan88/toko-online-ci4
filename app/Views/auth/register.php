@@ -8,7 +8,6 @@
                     <h4 class="mb-0"><i class="fas fa-user-plus"></i> Register</h4>
                 </div>
                 <div class="card-body">
-                    <!-- Tampilkan error -->
                     <?php if(session()->getFlashdata('error')): ?>
                         <div class="alert alert-danger">
                             <?php echo session()->getFlashdata('error') ?>

@@ -34,5 +34,8 @@ $routes->get('product/(:segment)', 'Home::productDetail/$1');
 // 6. HOME ROUTE (PALING BAWAH)
 $routes->get('/', 'Home::index');
 
+$routes->get('testdb/dbTest', 'TestDb::dbTest');
+$routes->get('testdb/checkUsersTable', 'TestDb::checkUsersTable');
+
 // 7. CATCH-ALL (PALING PALING BAWAH - JIKA PERLU)
 // $routes->get('(:any)', 'Home::index'); // ← COMMENT INI!

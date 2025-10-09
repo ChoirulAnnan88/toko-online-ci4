@@ -18,12 +18,10 @@ class Auth extends BaseController
 
     public function login()
     {
-        // DEBUG: Check if method is POST
         if ($this->request->getMethod() === 'post') {
             $email = $this->request->getPost('email');
             $password = $this->request->getPost('password');
 
-            // Cek jika field kosong
             if (empty($email) || empty($password)) {
                 return redirect()->back()->with('error', 'Email dan password harus diisi')->withInput();
             }
@@ -31,12 +29,6 @@ class Auth extends BaseController
             $user = $this->userModel->where('email', $email)->first();
 
             if ($user) {
-                // Debug password
-                // echo "Input Password: " . $password . "<br>";
-                // echo "Stored Hash: " . $user['password'] . "<br>";
-                // echo "Password Verify: " . ($this->userModel->verifyPassword($password, $user['password']) ? 'true' : 'false');
-                // die();
-
                 if ($this->userModel->verifyPassword($password, $user['password'])) {
                     $sessionData = [
                         'user_id' => $user['id'],
@@ -61,95 +53,40 @@ class Auth extends BaseController
         return view('auth/login', $data);
     }
 
-
-    ///debug register
     public function register()
-{
-    if ($this->request->getMethod() === 'post') {
-        echo "🔧 DEBUG: Form submitted!<br>";
-        echo "POST Data: ";
-        print_r($this->request->getPost());
-        echo "<br>";
-        
-        // Test database connection
-        try {
-            $db = \Config\Database::connect();
-            echo "✅ Database connected!<br>";
-        } catch (\Exception $e) {
-            echo "❌ Database error: " . $e->getMessage() . "<br>";
+    {
+        // JIKA FORM SUBMIT
+        if ($this->request->getMethod() === 'post') {
+            echo "🎯 DEBUG: Form Received!<br>";
+            echo "Data dari form:<br>";
+            echo "Username: " . $this->request->getPost('username') . "<br>";
+            echo "Email: " . $this->request->getPost('email') . "<br>";
+            echo "Password: " . $this->request->getPost('password') . "<br>";
+            echo "Nama Lengkap: " . $this->request->getPost('nama_lengkap') . "<br>";
+            
+            // SIMPLE INSERT - tanpa validasi
+            $data = [
+                'username' => $this->request->getPost('username'),
+                'email' => $this->request->getPost('email'),
+                'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+                'nama_lengkap' => $this->request->getPost('nama_lengkap'),
+                'alamat' => $this->request->getPost('alamat'),
+                'telepon' => $this->request->getPost('telepon'),
+                'role' => 'user'
+            ];
+            
+            $this->userModel->insert($data);
+            echo "🎉 BERHASIL! User created with ID: " . $this->userModel->getInsertID();
+            die();
         }
-        
-        die(); // Stop untuk lihat debug
+
+        // JIKA GET REQUEST - tampilkan form
+        return view('auth/register', ['title' => 'Register']);
     }
-    
-    // ... kode normal
-}
 
-
-
-
-    // public function register()
-    // {
-    //     if ($this->request->getMethod() === 'post') {
-    //         // Validasi manual sederhana
-    //         $username = $this->request->getPost('username');
-    //         $email = $this->request->getPost('email');
-    //         $password = $this->request->getPost('password');
-    //         $nama_lengkap = $this->request->getPost('nama_lengkap');
-
-    //         // Validasi required fields
-    //         if (empty($username) || empty($email) || empty($password) || empty($nama_lengkap)) {
-    //             return redirect()->back()->with('error', 'Semua field wajib diisi')->withInput();
-    //         }
-
-    //         // Validasi password length
-    //         if (strlen($password) < 8) {
-    //             return redirect()->back()->with('error', 'Password minimal 8 karakter')->withInput();
-    //         }
-
-    //         // Cek email unique
-    //         $existingEmail = $this->userModel->where('email', $email)->first();
-    //         if ($existingEmail) {
-    //             return redirect()->back()->with('error', 'Email sudah terdaftar')->withInput();
-    //         }
-
-    //         // Cek username unique
-    //         $existingUsername = $this->userModel->where('username', $username)->first();
-    //         if ($existingUsername) {
-    //             return redirect()->back()->with('error', 'Username sudah terdaftar')->withInput();
-    //         }
-
-    //         $userData = [
-    //             'username' => $username,
-    //             'email' => $email,
-    //             'password' => $password,
-    //             'nama_lengkap' => $nama_lengkap,
-    //             'alamat' => $this->request->getPost('alamat'),
-    //             'telepon' => $this->request->getPost('telepon')
-    //         ];
-
-    //         try {
-    //             if ($this->userModel->save($userData)) {
-    //                 return redirect()->to('/auth/login')->with('success', 'Registrasi berhasil! Silakan login.');
-    //             } else {
-    //                 $errors = $this->userModel->errors();
-    //                 return redirect()->back()->with('errors', $errors)->withInput();
-    //             }
-    //         } catch (\Exception $e) {
-    //             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
-    //         }
-    //     }
-
-//         $data = [
-//             'title' => 'Register - Toko Online'
-//         ];
-
-//         return view('auth/register', $data);
-//     }
-
-//     public function logout()
-//     {
-//         $this->session->destroy();
-//         return redirect()->to('/')->with('success', 'Logout berhasil!');
-//     }
+    public function logout()
+    {
+        $this->session->destroy();
+        return redirect()->to('/')->with('success', 'Logout berhasil!');
+    }
 }
