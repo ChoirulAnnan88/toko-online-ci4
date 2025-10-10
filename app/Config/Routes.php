@@ -26,9 +26,9 @@ $routes->post('admin/orders/update-status/(:num)', 'Admin::updateOrderStatus');
 
 // Existing Auth Routes
 $routes->get('auth/login', 'Auth::login');
-$routes->post('auth/processLogin', 'Auth::processLogin');
+$routes->post('auth/login', 'Auth::login');
 $routes->get('auth/register', 'Auth::register');
-$routes->post('auth/processRegister', 'Auth::processRegister');
+$routes->post('auth/register', 'Auth::register');
 $routes->get('auth/logout', 'Auth::logout');
 
 // Home route
