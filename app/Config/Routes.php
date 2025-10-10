@@ -1,48 +1,55 @@
 <?php
+use App\Controllers\Admin;
+use App\Controllers\ProfileController;
 
-use App\Controllers\UserController;
+namespace Config;
 
-// Home Routes (existing)
-    $routes->get('/', 'Home::index');
-    $routes->get('products', 'Home::products');
-    $routes->get('product/(:any)', 'Home::productDetail/$1');
+// Routes to one of the main controllers
+$routes->setDefaultNamespace('App\Controllers');
+$routes->setDefaultController('Home');
+$routes->setDefaultMethod('index');
+$routes->setTranslateURIDashes(false);
+$routes->set404Override();
+$routes->setAutoRoute(true);
 
-// USER ROUTES - Pastikan tepat seperti ini
-    $routes->group('user', function($routes) {
-    $routes->get('create', [UserController::class, 'create']);
-    $routes->post('store', [UserController::class, 'store']);
-    $routes->get('success', [UserController::class, 'success']); // INI YANG PENTING!
-    $routes->get('index', [UserController::class, 'index']);
-    $routes->get('edit/(:num)', [UserController::class, 'edit']);
-    $routes->post('update/(:num)', [UserController::class, 'update']);
-});
+/**
+ * --------------------------------------------------------------------
+ * Route Definitions
+ * --------------------------------------------------------------------
+ */
 
-// Auth Routes
-$routes->get('auth/register', 'AuthController::register');
-$routes->post('auth/processRegister', 'AuthController::processRegister');
-$routes->get('auth/login', 'AuthController::login');
-$routes->post('auth/processLogin', 'AuthController::processLogin');
-$routes->get('auth/logout', 'AuthController::logout');
-
-// User Routes (existing)
-$routes->get('user', 'UserController::index');
-$routes->get('user/create', 'UserController::create');
-$routes->post('user/store', 'UserController::store');
-$routes->get('user/success', 'UserController::success');
-
-// Home page
-$routes->get('/', function() {
-    return redirect()->to(session()->has('logged_in') ? '/dashboard' : '/auth/login');
-});
+// Profile Routes
+$routes->get('profile', [ProfileController::class, 'index']);
+$routes->get('profile/edit', [ProfileController::class, 'edit']);
+$routes->post('profile/update', [ProfileController::class, 'update']);
+$routes->get('profile/change-password', [ProfileController::class, 'changePassword']);
+$routes->post('profile/update-password', [ProfileController::class, 'updatePassword']);
+$routes->get('profile/orders', [ProfileController::class, 'orders']);
+$routes->get('profile/order/(:num)', [ProfileController::class, 'orderDetail']);
 
 // Admin Routes
-$routes->group('admin', function($routes) {
-    $routes->get('users', 'Admin\UserManagement::users');
-    $routes->get('users/edit/(:num)', 'Admin\UserManagement::edit/$1');
-    $routes->post('users/update/(:num)', 'Admin\UserManagement::update/$1');
-    $routes->get('users/delete/(:num)', 'Admin\UserManagement::delete/$1');
-});
+$routes->get('admin/dashboard', [Admin::class, 'dashboard']);
+$routes->get('admin/products', [Admin::class, 'products']);
+$routes->get('admin/categories', [Admin::class, 'categories']);
+$routes->get('admin/orders', [Admin::class, 'orders']);
+$routes->get('admin/users', [Admin::class, 'users']);
+$routes->post('admin/orders/update-status/(:num)', [Admin::class, 'updateOrderStatus']);
 
-// User Profile Routes
-$routes->get('profile', 'UserController::profile');
-$routes->post('profile/update', 'UserController::updateProfile');
+// Existing Auth Routes (keep these)
+$routes->get('auth/login', 'Auth::login');
+$routes->post('auth/processLogin', 'Auth::processLogin');
+$routes->get('auth/register', 'Auth::register');
+$routes->post('auth/processRegister', 'Auth::processRegister');
+$routes->get('auth/logout', 'Auth::logout');
+
+// Home route
+$routes->get('/', 'Home::index');
+
+/**
+ * --------------------------------------------------------------------
+ * Additional Routing
+ * --------------------------------------------------------------------
+ */
+if (is_file(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
+    require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
+}
