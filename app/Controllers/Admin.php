@@ -16,11 +16,12 @@ class Admin extends BaseController
 
     public function __construct()
     {
-        // Initialize models
         $this->productModel = new ProductModel();
         $this->categoryModel = new CategoryModel();
         $this->orderModel = new OrderModel();
         $this->userModel = new UserModel();
+        
+        helper(['form', 'text']);
     }
 
     /**
@@ -28,13 +29,11 @@ class Admin extends BaseController
      */
     private function checkAdminAccess()
     {
-        // Check if user is logged in
         if (!session()->get('logged_in')) {
             session()->setFlashdata('error', 'Anda harus login terlebih dahulu!');
             return redirect()->to('/auth/login');
         }
 
-        // Check if user has admin role
         if (session()->get('role') !== 'admin') {
             session()->setFlashdata('error', 'Akses ditolak! Hanya administrator yang dapat mengakses halaman ini.');
             return redirect()->to('/');
@@ -43,128 +42,145 @@ class Admin extends BaseController
         return true;
     }
 
-    /**
-     * Log security event
-     */
-    private function logSecurityEvent($action, $details = '')
-    {
-        $userId = session()->get('user_id');
-        $username = session()->get('username');
-        $ipAddress = $this->request->getIPAddress();
-        
-        $logMessage = "SECURITY: [{$action}] User: {$username} (ID: {$userId}) | IP: {$ipAddress}";
-        if ($details) {
-            $logMessage .= " | Details: {$details}";
-        }
-        
-        log_message('info', $logMessage);
-    }
-
     public function dashboard()
     {
-        // Check admin access
         $accessCheck = $this->checkAdminAccess();
         if ($accessCheck !== true) return $accessCheck;
 
-        $this->logSecurityEvent('ACCESS_ADMIN_DASHBOARD');
-
         try {
+            // FIX: Simple stats tanpa query complex
             $data = [
                 'title' => 'Admin Dashboard - Toko Online',
                 'total_products' => $this->productModel->countAll(),
                 'total_categories' => $this->categoryModel->countAll(),
                 'total_orders' => $this->orderModel->countAll(),
                 'total_users' => $this->userModel->where('role', 'customer')->countAllResults(),
-                'recent_orders' => $this->orderModel->orderBy('created_at', 'DESC')->findAll(5)
+                'recent_orders' => $this->orderModel->orderBy('created_at', 'DESC')->findAll(5),
+                'pending_orders' => $this->orderModel->where('status', 'pending')->countAllResults(),
+                'today_orders' => $this->orderModel->where('DATE(created_at)', date('Y-m-d'))->countAllResults()
             ];
             
             return view('admin/dashboard', $data);
         } catch (\Exception $e) {
-            $this->logSecurityEvent('ERROR_DASHBOARD', $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan sistem.');
+            log_message('error', 'Dashboard error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
 
     public function products()
     {
-        // Check admin access
         $accessCheck = $this->checkAdminAccess();
         if ($accessCheck !== true) return $accessCheck;
 
-        $this->logSecurityEvent('ACCESS_ADMIN_PRODUCTS');
-
         try {
+            $search = $this->request->getGet('search');
+            $category = $this->request->getGet('category');
+            
+            $productModel = $this->productModel;
+            
+            if ($search) {
+                $productModel->like('nama_produk', $search);
+            }
+            
+            if ($category) {
+                $productModel->where('kategori_id', $category);
+            }
+            
+            // FIX: Gunakan findAll() sederhana dulu
             $data = [
                 'title' => 'Kelola Produk - Admin',
-                'products' => $this->productModel->getProductsWithCategory()
+                'products' => $productModel->findAll(),
+                'categories' => $this->categoryModel->findAll(),
+                'search' => $search,
+                'selected_category' => $category
             ];
             
             return view('admin/products', $data);
         } catch (\Exception $e) {
-            $this->logSecurityEvent('ERROR_PRODUCTS', $e->getMessage());
+            log_message('error', 'Products error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat data produk.');
         }
     }
 
     public function categories()
     {
-        // Check admin access
         $accessCheck = $this->checkAdminAccess();
         if ($accessCheck !== true) return $accessCheck;
 
-        $this->logSecurityEvent('ACCESS_ADMIN_CATEGORIES');
-
         try {
+            // FIX: Simple categories data
             $data = [
                 'title' => 'Kelola Kategori - Admin',
-                'categories' => $this->categoryModel->getCategoriesWithProductCount()
+                'categories' => $this->categoryModel->findAll()
             ];
             
             return view('admin/categories', $data);
         } catch (\Exception $e) {
-            $this->logSecurityEvent('ERROR_CATEGORIES', $e->getMessage());
+            log_message('error', 'Categories error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat data kategori.');
         }
     }
 
     public function orders()
     {
-        // Check admin access
         $accessCheck = $this->checkAdminAccess();
         if ($accessCheck !== true) return $accessCheck;
 
-        $this->logSecurityEvent('ACCESS_ADMIN_ORDERS');
-
         try {
+            $status = $this->request->getGet('status');
+            
+            $orderModel = $this->orderModel;
+            
+            if ($status && $status !== 'all') {
+                $orderModel->where('status', $status);
+            }
+            
             $data = [
                 'title' => 'Kelola Pesanan - Admin',
-                'orders' => $this->orderModel->orderBy('created_at', 'DESC')->findAll()
+                'orders' => $orderModel->orderBy('created_at', 'DESC')->findAll(),
+                'status_filter' => $status
             ];
             
             return view('admin/orders', $data);
         } catch (\Exception $e) {
-            $this->logSecurityEvent('ERROR_ORDERS', $e->getMessage());
+            log_message('error', 'Orders error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat data pesanan.');
         }
     }
 
     public function users()
     {
-        // Check admin access
         $accessCheck = $this->checkAdminAccess();
         if ($accessCheck !== true) return $accessCheck;
 
-        $this->logSecurityEvent('ACCESS_ADMIN_USERS');
-
         try {
+            $search = $this->request->getGet('search');
+            $role = $this->request->getGet('role');
+            
+            $userModel = $this->userModel;
+            
+            if ($search) {
+                $userModel->groupStart()
+                    ->like('username', $search)
+                    ->orLike('email', $search)
+                    ->orLike('nama_lengkap', $search)
+                    ->groupEnd();
+            }
+            
+            if ($role && $role !== 'all') {
+                $userModel->where('role', $role);
+            }
+            
             $data = [
                 'title' => 'Kelola Users - Admin',
-                'users' => $this->userModel->where('role', 'customer')->findAll()
+                'users' => $userModel->orderBy('created_at', 'DESC')->findAll(),
+                'search' => $search,
+                'role_filter' => $role
             ];
             
             return view('admin/users', $data);
         } catch (\Exception $e) {
-            $this->logSecurityEvent('ERROR_USERS', $e->getMessage());
+            log_message('error', 'Users error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat data users.');
         }
     }
@@ -174,11 +190,9 @@ class Admin extends BaseController
      */
     public function updateOrderStatus($orderId)
     {
-        // Check admin access
         $accessCheck = $this->checkAdminAccess();
         if ($accessCheck !== true) return $this->response->setJSON(['success' => false, 'message' => 'Access denied']);
 
-        // Validate request method
         if (!$this->request->isAJAX()) {
             return $this->response->setJSON(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -187,39 +201,35 @@ class Admin extends BaseController
             $newStatus = $this->request->getJSON()->status;
             $allowedStatus = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
             
-            // Validate status
             if (!in_array($newStatus, $allowedStatus)) {
                 return $this->response->setJSON(['success' => false, 'message' => 'Status tidak valid']);
             }
 
-            // Update order
-            $result = $this->orderModel->update($orderId, ['status' => $newStatus]);
+            $updateData = ['status' => $newStatus];
+            
+            if ($newStatus === 'processing') {
+                $updateData['processed_at'] = date('Y-m-d H:i:s');
+            } elseif ($newStatus === 'shipped') {
+                $updateData['shipped_at'] = date('Y-m-d H:i:s');
+            } elseif ($newStatus === 'delivered') {
+                $updateData['delivered_at'] = date('Y-m-d H:i:s');
+            }
+
+            $result = $this->orderModel->update($orderId, $updateData);
             
             if ($result) {
-                $this->logSecurityEvent('UPDATE_ORDER_STATUS', "Order ID: {$orderId} -> Status: {$newStatus}");
-                return $this->response->setJSON(['success' => true, 'message' => 'Status berhasil diupdate']);
+                return $this->response->setJSON([
+                    'success' => true, 
+                    'message' => 'Status berhasil diupdate',
+                    'new_status' => $newStatus
+                ]);
             } else {
                 return $this->response->setJSON(['success' => false, 'message' => 'Gagal update status']);
             }
             
         } catch (\Exception $e) {
-            $this->logSecurityEvent('ERROR_UPDATE_ORDER', $e->getMessage());
+            log_message('error', 'Update order error: ' . $e->getMessage());
             return $this->response->setJSON(['success' => false, 'message' => 'Terjadi kesalahan sistem']);
         }
-    }
-
-    /**
-     * CSRF Protection for forms
-     */
-    public function getCSRFToken()
-    {
-        if (!session()->get('logged_in') || session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['error' => 'Access denied']);
-        }
-
-        return $this->response->setJSON([
-            'token' => csrf_hash(),
-            'field' => csrf_token()
-        ]);
     }
 }
