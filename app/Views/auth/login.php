@@ -45,7 +45,7 @@
                             <div class="alert alert-success"><?= session('success') ?></div>
                         <?php endif; ?>
 
-                        <form method="post" action="<?= site_url('auth/processLogin') ?>">
+                        <form method="post" action="<?= site_url('auth/login') ?>">
                             <?= csrf_field() ?>
 
                             <div class="mb-3">

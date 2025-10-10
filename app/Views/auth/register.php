@@ -51,7 +51,7 @@
                             </div>
                         <?php endif; ?>
 
-                        <form method="post" action="<?= site_url('auth/processRegister') ?>">
+                        <form method="post" action="<?= site_url('auth/register') ?>">
                             <?= csrf_field() ?>
                             
                             <div class="row">

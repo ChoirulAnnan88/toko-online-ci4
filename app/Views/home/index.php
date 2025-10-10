@@ -1,4 +1,5 @@
 <?= $this->include('templates/header') ?>
+<?= $this->include('templates/navbar') ?>
 
 <!-- Hero Section -->
 <section class="hero-section text-center">
