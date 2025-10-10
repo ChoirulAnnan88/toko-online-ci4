@@ -11,10 +11,8 @@ class Auth extends BaseController
 
     public function __construct()
     {
-        echo "🔧 Auth Controller LOADED!<br>";
         $this->userModel = new UserModel();
         $this->session = \Config\Services::session();
-        helper(['form', 'url']);
     }
 
     public function login()
@@ -52,7 +50,9 @@ class Auth extends BaseController
                 return redirect()->to('/profile')->with('success', 'Login berhasil!');
             }
         } else {
-            return redirect()->to('/auth/login')->with('error', 'Email atau password salah!');
+            // DEBUG: Tampilkan error langsung
+            session()->setFlashdata('error', 'Email atau password salah!');
+            return redirect()->to('/auth/login');
         }
     }
 
@@ -61,86 +61,62 @@ class Auth extends BaseController
         'title' => 'Login - Toko Online'
     ];
     return view('auth/login', $data);
+    
+
+        // GET request - show login form
+        $data = [
+            'title' => 'Login - Toko Online'
+        ];
+        return view('auth/login', $data);
     }
 
     public function register()
     {
-    // Jika sudah login, redirect
-    if (session()->get('logged_in')) {
-        return redirect()->to('/profile');
-    }
-
-    // Handle POST request
-    if ($this->request->getMethod() === 'post') {
-        $rules = [
-            'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
-            'email' => 'required|valid_email|max_length[255]|is_unique[users.email]',
-            'password' => 'required|min_length[6]|max_length[255]',
-            'confirm_password' => 'required|matches[password]'
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->back()
-                ->withInput()
-                ->with('errors', $this->validator->getErrors());
+        // Jika sudah login, redirect
+        if (session()->get('logged_in')) {
+            return redirect()->to('/profile');
         }
 
-        try {
-            $userData = [
-                'username' => $this->request->getPost('username'),
-                'email' => $this->request->getPost('email'),
-                'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-                'nama_lengkap' => $this->request->getPost('nama_lengkap') ?? $this->request->getPost('username'),
-                'role' => 'customer',
-                'is_active' => 1
+        // Handle POST request
+        if ($this->request->getMethod() === 'post') {
+            $rules = [
+                'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
+                'email' => 'required|valid_email|max_length[255]|is_unique[users.email]',
+                'password' => 'required|min_length[6]|max_length[255]',
+                'confirm_password' => 'required|matches[password]'
             ];
 
-            $this->userModel->save($userData);
+            if (!$this->validate($rules)) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('errors', $this->validator->getErrors());
+            }
 
-            return redirect()->to('/auth/login')->with('success', 'Registrasi berhasil! Silakan login.');
+            try {
+                $userData = [
+                    'username' => $this->request->getPost('username'),
+                    'email' => $this->request->getPost('email'),
+                    'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+                    'nama_lengkap' => $this->request->getPost('nama_lengkap') ?? $this->request->getPost('username'),
+                    'role' => 'customer',
+                    'is_active' => 1
+                ];
 
-        } catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        
-    
+                $this->userModel->save($userData);
 
-    // GET request - show register form
-    $data = [
-        'title' => 'Register - Toko Online',
-        'validation' => \Config\Services::validation()
-    ];
-    return view('auth/register', $data);
-    }
-    
+                return redirect()->to('/auth/login')->with('success', 'Registrasi berhasil! Silakan login.');
 
-    // GET request - show normal register form
-    $data = [
-        'title' => 'Register - Toko Online',
-        'validation' => \Config\Services::validation()
-    ];
+            } catch (\Exception $e) {
+                return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            }
+        }
 
-    return view('auth/register', $data);
-    }
-
-    // TAMPILKAN FORM TEST SEDERHANA
-    echo '
-    <!DOCTYPE html>
-    <html>
-    <head><title>TEST FORM</title></head>
-    <body>
-        <h1>TEST FORM SEDERHANA</h1>
-        <form method="POST" action="">
-            <input type="text" name="username" value="testuser" required><br>
-            <input type="email" name="email" value="test@test.com" required><br>
-            <input type="password" name="password" value="12345678" required><br>
-            <input type="text" name="nama_lengkap" value="Test User" required><br>
-            <button type="submit">SUBMIT TEST</button>
-        </form>
-        <p>Form ini menggunakan method POST langsung</p>
-    </body>
-    </html>
-    ';
-    die();
+        // GET request - show register form
+        $data = [
+            'title' => 'Register - Toko Online',
+            'validation' => \Config\Services::validation()
+        ];
+        return view('auth/register', $data);
     }
 
     public function logout()

@@ -139,4 +139,66 @@ class Home extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
     }
+
+        public function categories()
+    {
+        try {
+            $db = \Config\Database::connect();
+            
+            // Get categories
+            $categories = $db->table('categories')
+                            ->where('is_active', 1)
+                            ->get()
+                            ->getResultArray();
+            
+            // Get products count per category
+            $productsCount = $db->table('products p')
+                               ->select('p.kategori_id, COUNT(*) as total_products')
+                               ->where('p.is_active', 1)
+                               ->groupBy('p.kategori_id')
+                               ->get()
+                               ->getResultArray();
+            
+            $countMap = [];
+            foreach ($productsCount as $count) {
+                $countMap[$count['kategori_id']] = $count['total_products'];
+            }
+            
+            // Add product count to categories
+            foreach ($categories as &$category) {
+                $category['total_products'] = $countMap[$category['id']] ?? 0;
+            }
+
+            $data = [
+                'title' => 'Toko Online - Kategori',
+                'categories' => $categories
+            ];
+
+            return view('home/categories', $data);
+            
+        } catch (\Exception $e) {
+            $data = [
+                'title' => 'Toko Online - Kategori',
+                'categories' => [],
+                'error' => $e->getMessage()
+            ];
+            return view('home/categories', $data);
+        }
+    }
+
+    public function cart()
+    {
+        // Simple cart page for now
+        $data = [
+            'title' => 'Toko Online - Keranjang Belanja'
+        ];
+        return view('home/cart', $data);
+    }
+
+    public function productSearch()
+    {
+        // Redirect to products page with search parameter
+        $search = $this->request->getGet('q');
+        return redirect()->to('/products?search=' . urlencode($search));
+    }
 }

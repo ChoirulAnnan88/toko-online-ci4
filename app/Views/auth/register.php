@@ -1,3 +1,5 @@
+<?= $this->include('templates/header') ?>
+<?= $this->include('templates/navbar') ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -130,3 +132,4 @@
     </script>
 </body>
 </html>
+<?= $this->include('templates/footer') ?>
